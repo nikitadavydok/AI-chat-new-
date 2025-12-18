@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Next-Level Smart AI Chat</title>
+<title>CodeMentor AI Ultimate</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root{
-  --bg:#0e0f13; --panel:#151720; --panel-light:#1c1f2b; --accent:#4f8cff; 
+  --bg:#0f1117; --panel:#1c1f2b; --panel-light:#252a3b; --accent:#4f8cff; 
   --accent-hover:#66a3ff; --text:#e8eaf0; --muted:#9aa0b3; --radius:16px; --transition:.25s ease;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -17,34 +17,34 @@ body{display:flex;height:100vh;font-family:Inter,sans-serif;background:var(--bg)
 .top-buttons button{flex:1;padding:10px;border:none;border-radius:var(--radius);background:var(--accent);color:white;cursor:pointer;transition:var(--transition);}
 .top-buttons button:hover{background:var(--accent-hover);}
 .chat-btn{background:var(--panel-light);border:none;color:var(--text);padding:12px;border-radius:var(--radius);cursor:pointer;text-align:left;transition:var(--transition);margin-bottom:4px;}
-.chat-btn:hover{background:#23263a;}
+.chat-btn:hover{background:#323646;}
 .chat-btn.active{background:var(--accent);color:white;}
 .context-menu{position:absolute;background:var(--panel-light);border:1px solid #333;border-radius:var(--radius);display:none;flex-direction:column;z-index:1000;}
 .context-menu button{padding:10px 14px;border:none;background:transparent;color:var(--text);text-align:left;cursor:pointer;transition:var(--transition);}
-.context-menu button:hover{background:#23263a;}
+.context-menu button:hover{background:#323646;}
 .main{flex:1;display:flex;flex-direction:column;height:100vh;position:relative;}
 .chat{flex:1;padding:20px;overflow-y:auto;display:none;}
 .chat.active{display:block;}
-.message{max-width:75%;padding:14px 18px;border-radius:18px;margin-bottom:14px;line-height:1.6;animation:fade var(--transition) ease;word-wrap:break-word;white-space:pre-wrap;position:relative;}
+.message{max-width:75%;padding:14px 18px;border-radius:18px;margin-bottom:14px;line-height:1.6;animation:fade .3s ease forwards;word-wrap:break-word;white-space:pre-wrap;position:relative;opacity:0;transform:translateY(6px);}
 .user{margin-left:auto;background:var(--accent);color:white;}
 .ai{background:var(--panel-light);}
 pre{background:#0b0d14;padding:14px;border-radius:12px;overflow-x:auto;margin-top:10px;font-size:14px;}
-.copy{margin-top:6px;background:#23263a;border:none;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;transition:var(--transition);}
+.copy{margin-top:6px;background:#323646;border:none;color:var(--text);padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;transition:var(--transition);}
 .copy:hover{background:var(--accent);color:white;}
-.input-bar{padding:16px;background:linear-gradient(transparent,rgba(14,15,19,.95));}
+.input-bar{padding:16px;background:linear-gradient(transparent,rgba(15,17,23,.95));}
 .input-wrap{background:var(--panel);border-radius:32px;padding:8px 12px;display:flex;gap:10px;align-items:center;transition:var(--transition);}
 .input-wrap input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;}
 .send{background:var(--accent);border:none;padding:10px 18px;border-radius:32px;color:white;font-weight:600;cursor:pointer;transition:var(--transition);}
 .send:hover{background:var(--accent-hover);transform:scale(1.05);}
 .thinking{color:var(--muted);font-size:14px;}
-@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:800px){.sidebar{display:none}.message{max-width:90%}}
 </style>
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
-  <h1>Next-Level AI</h1>
+  <h1>CodeMentor AI Ultimate</h1>
   <div class="top-buttons">
     <button onclick="newChat()">+ New Chat</button>
   </div>
@@ -58,8 +58,16 @@ pre{background:#0b0d14;padding:14px;border-radius:12px;overflow-x:auto;margin-to
 <div class="main" id="main"></div>
 
 <script>
-let chatCounter=0,chats=[],activeChatId=-1,selectedChatId=null,memory={};
-const contextMenu=document.getElementById("contextMenu");
+let chatCounter=0,chats=[],activeChatId=-1,selectedChatId=null,memory={},availableVoices=[];
+
+// --- PRELOAD VOICES ---
+function loadVoices(){
+    availableVoices = window.speechSynthesis.getVoices();
+    if(availableVoices.length===0){
+        window.speechSynthesis.onvoiceschanged = () => { availableVoices = window.speechSynthesis.getVoices(); };
+    }
+}
+loadVoices();
 
 // --- NEW CHAT ---
 function newChat(){
@@ -90,10 +98,11 @@ function newChat(){
   const input=document.getElementById(`input-${chatId}`);
   input.addEventListener("keydown", e=>{if(e.key==="Enter") send(chatId)});
   switchChat(chatId);
-  postAI("Hello! I am your ultra-smart AI. Ask me anything, and I’ll guide you step by step!");
+  postAI("Hello! I am CodeMentor AI Ultimate. I solve any math problem, write advanced code with explanations, and guide you step-by-step on real-world tasks. Ask me anything!");
 }
 
 // --- CONTEXT MENU ---
+const contextMenu=document.getElementById("contextMenu");
 function attachContextMenu(btn, chatId){
   btn.oncontextmenu = e => { e.preventDefault(); openContextMenu(e,chatId); }
   let timer;
@@ -152,32 +161,91 @@ function postUser(text){
   div.className="message user";
   div.innerText=text;
   messages.appendChild(div);
-  messages.scrollTop=messages.scrollHeight;
+  messages.scrollTop = messages.scrollHeight;
 }
 
 function postAI(text){
   const chatObj=chats.find(c=>c.id===activeChatId);
   chatObj.history.push({type:"ai",text:text});
   const messages = chatObj.div.querySelector(".messages");
+
   if(text.startsWith("//") || text.includes("function") || text.includes("<html")){
     const wrap=document.createElement("div");
     wrap.className="message ai";
     const pre=document.createElement("pre");
     pre.innerText=text;
-    const btn=document.createElement("button");
-    btn.className="copy";
-    btn.innerText="Copy";
-    btn.onclick=()=>navigator.clipboard.writeText(text);
+
+    const btnCopy=document.createElement("button");
+    btnCopy.className="copy";
+    btnCopy.innerText="Copy";
+    btnCopy.onclick=()=>navigator.clipboard.writeText(text);
+
+    const btnSpeak=document.createElement("button");
+    btnSpeak.className="copy";
+    btnSpeak.innerText="🔊 Speak";
+    btnSpeak.onclick=()=>speakText(text);
+
     wrap.appendChild(pre);
-    wrap.appendChild(btn);
+    wrap.appendChild(btnCopy);
+    wrap.appendChild(btnSpeak);
     messages.appendChild(wrap);
+
   }else{
     const div=document.createElement("div");
     div.className="message ai";
     div.innerText=text;
+
+    const btnSpeak=document.createElement("button");
+    btnSpeak.className="copy";
+    btnSpeak.innerText="🔊 Speak";
+    btnSpeak.onclick=()=>speakText(text);
+    div.appendChild(btnSpeak);
+
     messages.appendChild(div);
   }
   messages.scrollTop = messages.scrollHeight;
+}
+
+// --- TEXT-TO-SPEECH (EMOJIS IGNORED) ---
+function speakText(text){
+    if('speechSynthesis' in window){
+        const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])/g,'')
+                              .replace(/[:;=8][\-^']?[\)D]/g,'');
+
+        const utter = new SpeechSynthesisUtterance(cleanText);
+        utter.rate = 1;      
+        utter.pitch = 1.1;   
+        utter.volume = 1;    
+
+        if(availableVoices.length > 0){
+            utter.voice = availableVoices.find(v => v.lang.includes('en') && v.name.toLowerCase().includes('female')) || availableVoices[0];
+        }
+
+        window.speechSynthesis.speak(utter);
+    } else {
+        alert("Sorry, your browser does not support speech synthesis.");
+    }
+}
+
+// --- SUPER SMART MATH ---
+function solveMath(text){
+  try{
+    let expr=text.toLowerCase()
+      .replace(/×|x/g,"*")
+      .replace(/÷/g,"/")
+      .replace(/π/g,"Math.PI")
+      .replace(/√(\d+)/g,"Math.sqrt($1)")
+      .replace(/\^/g,"**")
+      .replace(/sum of (\d+) and (\d+)/,"$1+$2")
+      .replace(/difference of (\d+) and (\d+)/,"$1-$2")
+      .replace(/product of (\d+) and (\d+)/,"$1*$2")
+      .replace(/quotient of (\d+) and (\d+)/,"$1/$2");
+
+    if(/[^0-9+\-*/().\sMathPI]/.test(expr)) return null;
+    let result = Function('"use strict";return ('+expr+')')();
+    if(result!==undefined) return "Step-by-step solution:\n1. Evaluate: "+expr+"\n2. Result: "+result;
+  }catch(e){}
+  return null;
 }
 
 // --- SEND ---
@@ -198,12 +266,12 @@ async function send(id){
   respond(text);
 }
 
-// --- ULTRA-SMART RESPONSE ---
+// --- SUPER SMART RESPONSE ---
 function respond(text){
   const langText=text.toLowerCase();
   const chatObj=chats.find(c=>c.id===activeChatId);
 
-  // Personalized memory
+  // Memory
   if(langText.includes("my name is")){
       memory.name = text.replace(/my name is/i,"").trim();
       postAI(`Nice to meet you, ${memory.name}!`);
@@ -211,49 +279,58 @@ function respond(text){
   }
 
   // Greetings
-  if(/hello|hi|hey/.test(langText)){
-      postAI("Hello! I can solve problems, write code, or guide you step by step through any process.");
+  if(/hello|hi|hey|how are you|how's it going|good morning|good evening/i.test(text)){
+      postAI("Hello! I'm doing great 😄 How can I assist you today?");
       return;
   }
 
-  // Detect vague questions
-  const codeWords=["code","script","function","program"];
-  const mathWords=["calculate","sum","factorial","equation","solve"];
-  const guideWords=["how","install","setup","download","where","step","tutorial"];
-  const ambiguous=![...codeWords,...mathWords,...guideWords].some(w=>langText.includes(w));
+  // Guides
+  if(/install python/i.test(text)){
+      postAI(
+        "Step-by-step to install Python on Windows 10:\n" +
+        "1. Go to https://www.python.org/downloads/windows/\n" +
+        "2. Click on the latest Python version download.\n" +
+        "3. Run the installer and check 'Add Python to PATH'.\n" +
+        "4. Click Install Now.\n" +
+        "5. Open Command Prompt and type 'python --version' to check."
+      );
+      return;
+  }
 
-  if(ambiguous){
-      postAI("I want to help! Do you want me to write code, solve a math problem, or give a step-by-step guide?");
+  if(/basic website/i.test(text)){
+      postAI(
+        "Step-by-step to make a basic website:\n" +
+        "1. Create a folder on your computer.\n" +
+        "2. Create an index.html file inside.\n" +
+        "3. Add basic HTML structure.\n" +
+        "4. Open it in a browser.\n" +
+        "5. Add CSS/JS files for styling and interactivity."
+      );
+      return;
+  }
+
+  if(/learn javascript/i.test(text)){
+      postAI(
+        "Step-by-step to learn JavaScript efficiently:\n" +
+        "1. Start with free tutorials: w3schools or Mozilla MDN.\n" +
+        "2. Practice syntax: variables, functions, loops.\n" +
+        "3. Build small projects: calculator, to-do list.\n" +
+        "4. Learn DOM manipulation and events.\n" +
+        "5. Explore ES6+ features and frameworks."
+      );
       return;
   }
 
   // Math
-  try{
-    let mathText=text.replace(/×|x/g,"*").replace(/÷/g,"/");
-    if(/^[0-9+*/().\s-]+$/.test(mathText)){
-        postAI("Math result: "+eval(mathText));
-        return;
-    }
-  }catch{}
+  const mathAnswer=solveMath(text);
+  if(mathAnswer){postAI(mathAnswer);return;}
 
-  // Step-by-step guides
-  if(guideWords.some(w=>langText.includes(w))){
-    const steps=[
-      "Step 1: Research what you need to do.",
-      "Step 2: Follow official or trusted guides.",
-      "Step 3: Execute each step carefully.",
-      "Step 4: Test and verify each step.",
-      "Step 5: Ask me for clarification if needed."
-    ];
-    steps.forEach((s,i)=>setTimeout(()=>postAI(s),(i+1)*600));
-    return;
-  }
-
-  // Code generation
-  if(codeWords.some(w=>langText.includes(w))){
-    const examples=[
+  // Code request
+  const codeKeywords=["code","script","function","program","javascript","python","html","css","java"];
+  if(codeKeywords.some(w=>langText.includes(w))){
+    const codeSamples=[
       {
-        code:`// Advanced JS: Calculator class
+        code:`// JavaScript: Advanced Calculator
 class Calculator{
   add(a,b){return a+b;}
   subtract(a,b){return a-b;}
@@ -262,20 +339,17 @@ class Calculator{
 }
 const calc=new Calculator();
 console.log(calc.add(5,3));`,
-        explanation:"Step-by-step:\n1. Define Calculator class.\n2. Add methods for add, subtract, multiply, divide.\n3. Instantiate object.\n4. Call method and log result."
-      },
-      {
-        code:`// HTML/CSS/JS mini app\n<!DOCTYPE html><html><head><style>body{background:#222;color:#fff}</style></head><body><button onclick="alert('Hello!')">Click Me</button></body></html>`,
-        explanation:"Step-by-step:\n1. Basic HTML structure.\n2. Style body background and color.\n3. Add button with onclick alert."
+        explanation:"Step-by-step:\n1. Create Calculator class.\n2. Add methods.\n3. Create instance.\n4. Call methods and log."
       }
     ];
-    const example=examples[Math.floor(Math.random()*examples.length)];
+    const example=codeSamples[Math.floor(Math.random()*codeSamples.length)];
     postAI(example.code);
     setTimeout(()=>postAI(example.explanation),600);
     return;
   }
 
-  postAI("I can generate complex code, solve math, or guide you step by step. Could you clarify what you want?");
+  // Fallback
+  postAI("I am a super smart AI. I can solve math, generate advanced code, or give step-by-step guidance. Could you clarify exactly what you want?");
 }
 
 // --- INIT ---
