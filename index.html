@@ -29,6 +29,7 @@ body{font-family:Arial,sans-serif;background:#121212;color:#fff;display:flex;hei
 .input-area input[type=text]{flex:1;padding:10px;border-radius:20px;border:none;outline:none;background:#222;color:white;}
 .input-area button{padding:0 14px;border:none;border-radius:50%;background:#0f0;color:#000;font-weight:bold;cursor:pointer;transition:0.2s;}
 .input-area button:hover{background:#66ff66;transform:scale(1.1);}
+.input-area input[type=file]{display:none;}
 @media(max-width:700px){
   body{flex-direction:column;}
   .sidebar{width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;}
@@ -64,6 +65,8 @@ function addChat(){
     <div class="input-area">
       <input type="text" placeholder="Type anything..." id="input-${chatId}">
       <button onclick="sendMessage(document.getElementById('input-${chatId}'))">➤</button>
+      <button onclick="document.getElementById('file-${chatId}').click()">📷</button>
+      <input type="file" id="file-${chatId}" accept="image/*" onchange="sendImage(this)">
     </div>
   `;
   document.getElementById("main").appendChild(chatDiv);
@@ -79,7 +82,7 @@ function addChat(){
   input.addEventListener("keydown",(e)=>{if(e.key==="Enter") sendMessage(input);});
 
   switchChat(chatId);
-  postAI("Hello! I am your AI. Ask me anything — math, code, translations, or general questions.", chatDiv.querySelector(".messages"));
+  postAI("Hello! I am your AI. Ask me anything — math, code, translations, or even send an image.", chatDiv.querySelector(".messages"));
 }
 
 // SWITCH CHAT
@@ -120,7 +123,6 @@ function postAI(text,messagesDiv){
   const div = document.createElement("div");
   div.className="msg ai";
 
-  // If text looks like code, make it copyable
   if(text.startsWith("//") || text.includes("function") || text.includes("console.log")){
     const pre = document.createElement("pre");
     pre.innerText = text;
@@ -148,41 +150,59 @@ async function sendMessage(inputBox){
   postAI(reply,chats.find(c=>c.id===activeChatId).div.querySelector(".messages"));
 }
 
+// SEND IMAGE
+function sendImage(input){
+  if(!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const messages = chats.find(c=>c.id===activeChatId).div.querySelector(".messages");
+    const divUser = document.createElement("div");
+    divUser.className="msg user";
+    const imgUser = document.createElement("img");
+    imgUser.src = e.target.result;
+    imgUser.style.maxWidth="200px"; imgUser.style.borderRadius="10px";
+    divUser.appendChild(imgUser);
+    messages.appendChild(divUser);
+
+    // AI response placeholder
+    postAI("I see an image! I cannot fully analyze it without an external API, but it looks interesting!", messages);
+  }
+  reader.readAsDataURL(file);
+}
+
 // GENERATE RESPONSE
 async function generateResponse(text){
   text=text.trim();
-
-  // Simulate thinking delay
   await new Promise(res=>setTimeout(res,500));
 
-  // Personalized memory
+  // Memory
   if(text.toLowerCase().includes("my name is")){
     memory.name=text.replace(/my name is/i,"").trim();
-    return `Nice to meet you, ${memory.name}! I can help with code, math, translations, or general questions.`;
+    return `Nice to meet you, ${memory.name}! I can help with code, math, translations, or images.`;
   }
   if(text.toLowerCase().includes("my name")) return memory.name? `Your name is ${memory.name}.`:"You haven't told me your name yet.";
 
   // Greetings
-  if(/hello|hi|hey/i.test(text)) return "Hello! I’m glad you’re here. How’s your day going? I can also help with coding, math, and translations!";
+  if(/hello|hi|hey/i.test(text)) return "Hello! How are you today? I can also help with math, code, translations, and images!";
 
   // Math
   try{
     let mathText=text.replace(/×|x/g,"*");
-    if(/^\d+[\+\-\*\/\d\s\.]+$/.test(mathText)) return "Math result: " + eval(mathText) + ". I can also explain the steps if you want!";
+    if(/^\d+[\+\-\*\/\d\s\.]+$/.test(mathText)) return "Math result: " + eval(mathText) + ". I can explain steps if you want!";
   }catch(e){}
 
-  // Code generation
+  // Code
   if(text.toLowerCase().includes("code") || text.toLowerCase().includes("script")){
-    return "// Example JavaScript code\nfor(let i=1;i<=10;i++){console.log(i);}\nYou can copy this code and run it directly!";
+    return "// Example JavaScript code\nfor(let i=1;i<=10;i++){console.log(i);}\nClick copy to save it!";
   }
 
   // Translation
   if(text.toLowerCase().includes("translate")){
-    return "I can help translate text! For example, type: 'Translate Hello to Spanish'.";
+    return "I can translate text! Example: 'Translate Hello to Spanish'.";
   }
 
-  // Default
-  return "Hmm… let me think carefully… I can try to solve your question or give detailed guidance!";
+  return "Hmm… I’m thinking… I can try to solve your question, give guidance, or analyze images!";
 }
 
 // INIT
